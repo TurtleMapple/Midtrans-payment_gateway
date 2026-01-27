@@ -131,16 +131,19 @@ export class InvoiceService {
                 }
             }
             
-            // Mark sebagai sedang diproses untuk mencegah concurrent calls
+            // ✅ FIX #3: Mark as in-progress dengan timestamp
             invoice.paymentAttemptCount = (invoice.paymentAttemptCount || 0) + 1
+            invoice.paymentLinkCreatedAt = new Date() // State marker
             await em.flush()
         })
         
         try {
-            // Step 4: Call Midtrans API (OUTSIDE transaction)
+            // ✅ FIX #1: Deterministic order_id
+            const midtransOrderId = `${invoice!.orderId}-ATTEMPT-${invoice!.paymentAttemptCount}`
+            
             const payload = {
                 transaction_details: {
-                    order_id: `${invoice!.orderId.substring(0, 29)}-${Math.random().toString(36).substring(2, 8)}`,
+                    order_id: midtransOrderId, // Traceable & deterministic
                     gross_amount: invoice!.amount
                 },
                 usage_limit: 1,
@@ -181,22 +184,22 @@ export class InvoiceService {
                 }
                 
                 updatedInvoice.paymentLink = paymentLinkData.payment_url
-                updatedInvoice.paymentLinkCreatedAt = new Date()
+                // Keep paymentLinkCreatedAt as success timestamp
                 await em.flush()
                 
-                const sanitizedOrderId = updatedInvoice.orderId.replace(/[\r\n]/g, '')
-                const sanitizedUrl = paymentLinkData.payment_url.replace(/[\r\n]/g, '')
-                console.info(`Payment link generated for invoice ${sanitizedOrderId}: ${sanitizedUrl}`)
+                console.info(`Payment link generated for invoice ${updatedInvoice.orderId}: ${paymentLinkData.payment_url}`)
                 
                 return updatedInvoice
             })
 
         } catch (error) {
-            // Rollback: Reset attempt count jika API call gagal
+            // ✅ FIX #2: NO rollback attempt count
+            // ✅ FIX #3: Clear timestamp to mark as failed
             await em.transactional(async (em) => {
                 const failedInvoice = await em.findOne(Invoice, { id, deletedAt: null })
                 if (failedInvoice) {
-                    failedInvoice.paymentAttemptCount = Math.max(0, (failedInvoice.paymentAttemptCount || 1) - 1)
+                    failedInvoice.paymentLinkCreatedAt = null as any // Mark as failed
+                    // paymentAttemptCount tetap naik (tidak di-rollback)
                     await em.flush()
                 }
             })
