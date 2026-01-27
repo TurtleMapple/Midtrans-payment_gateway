@@ -8,6 +8,19 @@ import 'reflect-metadata'
 
 const app = new Hono()
 
+// CORS middleware - tambahkan di awal sebelum route lain
+app.use('*', async (c, next) => {
+  c.header('Access-Control-Allow-Origin', '*')
+  c.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  c.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key')
+  
+  if (c.req.method === 'OPTIONS') {
+    return c.text('', 200)
+  }
+  
+  await next()
+})
+
 // Health check endpoint
 app.get('/health', (c) => {
   return c.text('OK')
@@ -52,7 +65,6 @@ app.get('/openapi.json', (c) => {
 })
 
 // Scalar UI dengan dynamic import
-// Scalar UI dengan dynamic import
 app.get('/docs', async (c, next) => {
   try {
     const scalarModule = await import('@scalar/hono-api-reference')
@@ -81,7 +93,6 @@ app.get('/docs', async (c, next) => {
     `)
   }
 })
-
 
 // 404 handler
 app.notFound((c) => {
