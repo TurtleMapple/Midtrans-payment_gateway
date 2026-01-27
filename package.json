@@ -1,0 +1,38 @@
+{
+  "name": "payment-gateway",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx --watch src/server.ts",
+    "migration:create": "mikro-orm migration:create",
+    "migration:up": "mikro-orm migration:up",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.28.1",
+  "dependencies": {
+    "@hono/node-server": "^1.19.9",
+    "@hono/zod-openapi": "^1.2.0",
+    "@mikro-orm/core": "^6.6.4",
+    "@mikro-orm/mysql": "^6.6.4",
+    "@scalar/hono-api-reference": "^0.9.37",
+    "dotenv": "^17.2.3",
+    "hono": "^4.11.4",
+    "midtrans-client": "^1.4.3",
+    "mikro-orm": "^6.6.4",
+    "mysql2": "^3.16.1",
+    "reflect-metadata": "^0.2.2",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@mikro-orm/cli": "^6.6.4",
+    "@types/midtrans-client": "^1.4.0",
+    "@types/node": "^25.0.9",
+    "ts-node-dev": "^2.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
