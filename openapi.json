@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:3000",
+      "url": "https://mansur.my.id",
       "description": "Development server"
     }
   ],
