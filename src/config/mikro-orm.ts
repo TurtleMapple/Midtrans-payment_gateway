@@ -1,5 +1,6 @@
 import { MikroORM } from '@mikro-orm/core'
 import { MySqlDriver } from '@mikro-orm/mysql'
+import { Migrator } from '@mikro-orm/migrations'
 import { env } from './env'
 import { Invoice } from '../database/entities/InvoiceEntity'
 
@@ -11,6 +12,7 @@ export const mikroOrmConfig = {
   password: env.DB_PASSWORD,
   dbName: env.DB_NAME,
   entities: [Invoice],
+  extensions: [Migrator],
   migrations: { 
     path: './src/database/migrations',
     disableForeignKeys: false,

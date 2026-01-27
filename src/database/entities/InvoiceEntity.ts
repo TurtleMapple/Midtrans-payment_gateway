@@ -1,10 +1,11 @@
 import { Entity, PrimaryKey, Property } from '@mikro-orm/core'
 import { InvoiceStatus } from './InvoiceStatus'
+import { v7 as uuid } from 'uuid'
 
 @Entity({ tableName: 'invoices' })
 export class Invoice {
-  @PrimaryKey({ type: 'bigint' })
-  id!: number
+  @PrimaryKey({ type: 'uuid' })
+  id: string = uuid()
 
   @Property({ type: 'string', length: 64, unique: true })
   orderId!: string

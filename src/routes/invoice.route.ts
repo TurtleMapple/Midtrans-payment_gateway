@@ -65,9 +65,9 @@ invoiceRoute.post('/invoices', apiKeyAuth, async (c) => {
  */
 invoiceRoute.post('/invoices/:id/generate-payment-link', apiKeyAuth, async (c) => {
     try{
-      const id = Number(c.req.param('id'))
-      if(Number.isNaN(id) || id <= 0 ) {
-          return c.json({ error: 'ID invoice tidak valid' }, 400)
+      const id = c.req.param('id')
+      if (!id || id.trim() === '') {
+        return c.json({ error: 'ID invoice tidak valid' }, 400)
       }
 
       const result = await invoiceService.generatePaymentLink(id)
@@ -195,9 +195,9 @@ invoiceRoute.post('/v1/payment-links', apiKeyAuth, async (c) => {
  */
 invoiceRoute.get('/invoices/:id', async (c) => {
   try {
-    const id = Number(c.req.param('id'))
+    const id = c.req.param('id')
     
-    if (Number.isNaN(id) || id <= 0) {
+    if (!id || id.trim() === '') {
       return c.json({ error: 'ID pembayaran tidak valid' }, 400)
     }
     
@@ -236,9 +236,9 @@ invoiceRoute.get('/invoices/:id', async (c) => {
  */
 invoiceRoute.delete('/invoices/:id', apiKeyAuth, async (c) => {
   try {
-    const id = Number(c.req.param('id'))
+    const id = c.req.param('id')
     
-    if (Number.isNaN(id) || id <= 0) {
+    if (!id || id.trim() === '') {
       return c.json({ error: 'ID pembayaran tidak valid' }, 400)
     }
     
@@ -275,9 +275,9 @@ invoiceRoute.get('/v1/invoices', async (c) => {
  */
 invoiceRoute.get('/v1/invoices/:id', async (c) => {
   try {
-    const id = Number(c.req.param('id'))
+    const id = c.req.param('id')
     
-    if (Number.isNaN(id) || id <= 0) {
+    if (!id || id.trim() === '') {
       return c.json({ error: 'Invalid invoice ID' }, 400)
     }
     

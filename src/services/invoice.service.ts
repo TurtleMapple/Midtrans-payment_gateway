@@ -96,7 +96,7 @@ export class InvoiceService {
      * 4. Call Midtrans API (outside transaction)
      * 5. Update invoice dengan payment link
      */
-    async generatePaymentLink(id: number): Promise<Invoice> {
+    async generatePaymentLink(id: string): Promise<Invoice> {
         const em = getEntityManager()
         
         // Step 1-3: Lock, validate, mark processing, commit
@@ -219,7 +219,7 @@ export class InvoiceService {
      * @returns Invoice yang sudah ditandai sebagai dihapus
      * @throws 'Invoice not found' jika ID tidak ditemukan
      */
-    async softDelete(id: number) {
+    async softDelete(id: string) {
         const em = getEntityManager() // MikroORM: Ambil EntityManager untuk database operations
         
         // MikroORM Transaction: Wrap operasi dalam transaction untuk data consistency
@@ -249,7 +249,7 @@ export class InvoiceService {
      * @param id - ID invoice di database
      * @returns Invoice jika ditemukan, null jika tidak ada
      */
-    async getById(id: number) {
+    async getById(id: string) {
         const em = getEntityManager()
         return await em.findOne(Invoice, { 
             id, 
@@ -292,7 +292,7 @@ export class InvoiceService {
      * @throws 'Invalid Status' jika status tidak valid
      * @throws 'Invoice not found' jika ID tidak ditemukan
      */
-    async updateStatus(id: number, status: InvoiceStatus, paymentData?: any) {
+    async updateStatus(id: string, status: InvoiceStatus, paymentData?: any) {
         if (!Object.values(InvoiceStatus).includes(status)) {
             throw new Error('Invalid Status')
         }
