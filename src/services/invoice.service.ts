@@ -139,7 +139,7 @@ export class InvoiceService {
         
         try {
             // ✅ FIX #1: Deterministic order_id
-            const midtransOrderId = `${invoice!.orderId}-ATTEMPT-${invoice!.paymentAttemptCount}`
+            const midtransOrderId = `${invoice!.orderId.substring(0, 25)}-${invoice!.paymentAttemptCount}`
             
             const payload = {
                 transaction_details: {
@@ -151,7 +151,7 @@ export class InvoiceService {
                     duration: 30,
                     unit: "minutes"
                 },
-                finish_redirect_url: `${process.env.BASE_URL || 'http://localhost:3000'}/payment/success?order_id=${invoice!.orderId}`
+                finish_redirect_url: `${process.env.BASE_URL}/payment/success?order_id=${invoice!.orderId}`
             }
 
             const midtransUrl = midtransEnv.IS_PRODUCTION

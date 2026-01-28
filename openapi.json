@@ -5,13 +5,13 @@
     "version": "1.0.0",
     "description": "Simple payment gateway API with Midtrans integration"
   },
-  "servers": [
+    "servers": [
     {
       "url": "https://mansur.my.id",
-      "description": "Production  server"
+      "description": "Production server"
     },
     {
-      "url": "http://localhost:3000",
+      "url": "http://localhost:3000", 
       "description": "Local Development server"
     }
   ],
