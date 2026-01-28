@@ -151,7 +151,7 @@ export class InvoiceService {
                     duration: 30,
                     unit: "minutes"
                 },
-                finish_redirect_url: `${process.env.BASE_URL}/payment/success?order_id=${invoice!.orderId}`
+                finish_redirect_url: `https://mansur.my.id/payment/success?order_id=${invoice!.orderId}`
             }
 
             const midtransUrl = midtransEnv.IS_PRODUCTION
