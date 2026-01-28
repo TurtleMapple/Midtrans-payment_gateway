@@ -43,7 +43,7 @@ invoiceRoute.post('/invoices', apiKeyAuth, async (c) => {
     }
 
     // Auto-generate orderId
-    const orderId = `INV-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    const orderId = `PAY-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     
     const invoice = await invoiceService.create(orderId, amount)
     return c.json(invoice, 201)
