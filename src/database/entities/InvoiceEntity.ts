@@ -5,7 +5,7 @@ import { v7 as uuid } from 'uuid'
 @Entity({ tableName: 'invoices' })
 export class Invoice {
   @PrimaryKey({ type: 'uuid' })
-  id: string = uuid()
+  id!: string
 
   @Property({ type: 'string', length: 64, unique: true })
   orderId!: string
@@ -54,4 +54,8 @@ export class Invoice {
 
   @Property({ type: 'int', default: 0 })
   paymentAttemptCount!: number
+
+  constructor() {
+    this.id = uuid()
+  }  
 }

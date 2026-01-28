@@ -1,4 +1,4 @@
-import { MikroORM } from '@mikro-orm/core'
+import { MikroORM, EntityCaseNamingStrategy } from '@mikro-orm/core'
 import { MySqlDriver } from '@mikro-orm/mysql'
 import { Migrator } from '@mikro-orm/migrations'
 import { env } from './env'
@@ -17,6 +17,7 @@ export const mikroOrmConfig = {
     path: './src/database/migrations',
     disableForeignKeys: false,
   },
+  namingStrategy: EntityCaseNamingStrategy,
   debug: process.env.NODE_ENV !== 'production',
 }
 
@@ -40,7 +41,6 @@ export const closeDatabase = async (): Promise<void> => {
   }
 }
 
-// Helper untuk mendapatkan EntityManager yang fresh
 export const getEntityManager = () => {
   if (!orm) {
     throw new Error('Database not initialized. Call initDatabase() first.')
