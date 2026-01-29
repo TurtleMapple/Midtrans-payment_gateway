@@ -4,11 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx --watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
+    "dev": "tsx --watch src/server.ts",
     "migration:create": "mikro-orm migration:create",
     "migration:up": "mikro-orm migration:up",
+    "start": "node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -30,11 +30,13 @@
     "mikro-orm": "^6.6.4",
     "mysql2": "^3.16.1",
     "reflect-metadata": "^0.2.2",
+    "sst": "3.17.38",
     "uuid": "^13.0.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@mikro-orm/cli": "^6.6.4",
+    "@types/aws-lambda": "8.10.160",
     "@types/midtrans-client": "^1.4.0",
     "@types/node": "^25.0.9",
     "@types/uuid": "^11.0.0",
