@@ -7,12 +7,12 @@
   },
     "servers": [
     {
-      "url": "https://mansur.my.id",
-      "description": "Production server"
-    },
-    {
       "url": "http://localhost:3000", 
       "description": "Local Development server"
+    },
+    {
+      "url": "https://mansur.my.id",
+      "description": "Production server"
     }
   ],
   "paths": {
