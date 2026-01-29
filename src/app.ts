@@ -38,7 +38,6 @@ app.get('/debug', (c) => {
       'GET /invoices/:id',
       'DELETE /invoices/:id',
       'GET /v1/invoices',
-      'GET /v1/invoices/:id',
       'POST /v1/payment-links',
       'POST /midtrans/notification',
       'GET /docs',
@@ -86,7 +85,6 @@ app.get('/docs', async (c, next) => {
       <ul>
         <li>GET /health - Health check</li>
         <li>GET /v1/invoices - List invoices</li>
-        <li>GET /v1/invoices/:id - Get invoice</li>
         <li>POST /v1/payment-links - Generate payment link</li>
         <li>POST /midtrans/notification - Webhook</li>
       </ul>

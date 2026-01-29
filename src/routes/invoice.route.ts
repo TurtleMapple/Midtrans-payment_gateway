@@ -258,7 +258,7 @@ invoiceRoute.delete('/invoices/:id', apiKeyAuth, async (c) => {
  * 
  * GET /v1/invoices - Minimal list endpoint
  */
-invoiceRoute.get('/v1/invoices', async (c) => {
+invoiceRoute.get('/invoices/:id', apiKeyAuth, async (c) => {
   try {
     const invoices = await invoiceService.getAll(50)
     return c.json(invoices)

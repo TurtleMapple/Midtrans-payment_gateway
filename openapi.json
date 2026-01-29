@@ -95,6 +95,7 @@
     "/v1/invoices": {
       "get": {
         "summary": "List all invoices",
+        "security": [{"ApiKeyAuth": []}],
         "responses": {
           "200": {
             "description": "List of invoices",
@@ -104,22 +105,6 @@
                   "type": "array",
                   "items": {"$ref": "#/components/schemas/Invoice"}
                 }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v1/invoices/{id}": {
-      "get": {
-        "summary": "Get invoice by ID",
-        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}],
-        "responses": {
-          "200": {
-            "description": "Invoice details",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/Invoice"}
               }
             }
           }
@@ -171,16 +156,62 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": {"type": "object"}
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "transaction_time": {"type": "string"},
+                  "transaction_status": {"type": "string", "enum": ["pending", "settlement", "cancel", "deny", "expire", "failure"]},
+                  "transaction_id": {"type": "string"},
+                  "status_message": {"type": "string"},
+                  "status_code": {"type": "string"},
+                  "signature_key": {"type": "string"},
+                  "payment_type": {"type": "string"},
+                  "order_id": {"type": "string"},
+                  "merchant_id": {"type": "string"},
+                  "gross_amount": {"type": "string"},
+                  "fraud_status": {"type": "string"},
+                  "currency": {"type": "string"}
+                },
+                "required": ["order_id", "transaction_status", "gross_amount"]
+              },
+              "example": {
+                "transaction_time": "2024-01-15 10:30:00",
+                "transaction_status": "settlement",
+                "transaction_id": "b3a4d5e6-7890-1234-5678-90abcdef1234",
+                "status_message": "midtrans payment notification",
+                "status_code": "200",
+                "signature_key": "abc123def456...",
+                "payment_type": "bank_transfer",
+                "order_id": "ORDER-123456789",
+                "merchant_id": "G123456789",
+                "gross_amount": "100000.00",
+                "fraud_status": "accept",
+                "currency": "IDR"
+              }
             }
           }
         },
         "responses": {
-          "200": {"description": "Webhook processed"}
+          "200": {
+            "description": "Webhook processed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {"type": "string"}
+                  }
+                },
+                "example": {
+                  "status": "OK"
+                }
+              }
+            }
+          }
         }
       }
-    }
-  },
+    },
+
   "components": {
     "schemas": {
       "Invoice": {
@@ -210,5 +241,6 @@
         "name": "x-api-key"
       }
     }
+  }
   }
 }
