@@ -9,7 +9,9 @@
     "migration:create": "mikro-orm migration:create",
     "migration:up": "mikro-orm migration:up",
     "start": "node dist/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy:production": "pnpm exec sst deploy --stage production",
+    "deploy:staging": "pnpm exec sst deploy"
   },
   "keywords": [],
   "author": "",

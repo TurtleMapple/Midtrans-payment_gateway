@@ -13,6 +13,25 @@ export default $config({
     new sst.aws.Function("PaymentGateway", {
       url: true,
       handler: "src/server.handler",
+      nodejs: {
+        install: ["mysql2"], // Only install the driver you're actually using
+        esbuild: {
+          external: [
+            "mariadb",
+            "mariadb/callback",
+            "mysql",
+            "tedious",
+            "pg-native",
+            "pg-query-stream",
+            "oracledb",
+            "better-sqlite3",
+            "sqlite3",
+            "@mikro-orm/mongodb",
+            "@mikro-orm/better-sqlite",
+            "libsql",
+          ],
+        },
+      },
     });
   },
 });
