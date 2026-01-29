@@ -1,6 +1,6 @@
-import { midtransEnv } from '../config/midtrans'
+import { midtransEnv } from '../../config/midtrans'
 import { InvoiceService } from './invoice.service'
-import { InvoiceStatus } from '../database/entities/InvoiceStatus'
+import { InvoiceStatus } from '../entities/InvoiceStatus'
 import crypto from 'crypto';
 
 /**

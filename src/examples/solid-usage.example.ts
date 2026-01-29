@@ -5,10 +5,10 @@
  * with Repository Pattern and Dependency Injection.
  */
 
-import { InvoiceService } from '../services/invoice.service'
-import { createInvoiceRepository, RepositoryFactory } from '../repositories/RepositoryFactory'
-import { IInvoiceRepository } from '../repositories/IInvoiceRepository'
-import { InvoiceStatus } from '../database/entities/InvoiceStatus'
+import { InvoiceService } from '../domain/services/invoice.service'
+import { createInvoiceRepository, RepositoryFactory } from '../domain/repositories/RepositoryFactory'
+import { IInvoiceRepository } from '../domain/repositories/IInvoiceRepository'
+import { InvoiceStatus } from '../domain/entities/InvoiceStatus'
 
 // ========================================
 // EXAMPLE 1: Basic Usage (Default Setup)

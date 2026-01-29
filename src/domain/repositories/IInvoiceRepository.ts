@@ -1,5 +1,5 @@
-import { Invoice } from '../database/entities/InvoiceEntity'
-import { InvoiceStatus } from '../database/entities/InvoiceStatus'
+import { Invoice } from '../entities/InvoiceEntity'
+import { InvoiceStatus } from '../entities/InvoiceStatus'
 import { FindOptions } from '@mikro-orm/core'
 
 /**

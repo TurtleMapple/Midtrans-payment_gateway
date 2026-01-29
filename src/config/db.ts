@@ -4,7 +4,7 @@ import { PostgreSqlDriver } from "@mikro-orm/postgresql";
 import { SqliteDriver } from "@mikro-orm/sqlite";
 import { Migrator } from "@mikro-orm/migrations";
 import { env } from "./env";
-import { Invoice } from "../database/entities/InvoiceEntity";
+import { Invoice } from "../domain/entities/InvoiceEntity";
 
 // Get driver class based on env configuration
 const getDriver = () => {

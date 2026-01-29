@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
-import { InvoiceService } from '../services/invoice.service'
+import { InvoiceService } from '../domain/services/invoice.service'
 import { apiKeyAuth } from '../middleware/auth.middleware'
-import { InvoiceStatus } from '../database/entities/InvoiceStatus'
+import { InvoiceStatus } from '../domain/entities/InvoiceStatus'
 import { z } from 'zod'
 
 const invoiceRoute = new Hono()
