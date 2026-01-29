@@ -1,4 +1,4 @@
-import { getEntityManager } from '../config/mikro-orm'
+import { getEntityManager } from '../config/db'
 import { Invoice } from '../database/entities/InvoiceEntity'
 import { InvoiceStatus } from '../database/entities/InvoiceStatus'
 import { midtransEnv } from '../config/midtrans'

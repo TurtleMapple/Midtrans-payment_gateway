@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import { serve } from '@hono/node-server'
 import app from './app'
-import { initDatabase } from './config/mikro-orm'
+import { initDatabase } from './config/db'
 import 'reflect-metadata'
 
 const port = Number(process.env.PORT || 3000)

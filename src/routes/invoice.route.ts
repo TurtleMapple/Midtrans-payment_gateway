@@ -5,8 +5,10 @@ import { InvoiceStatus } from '../database/entities/InvoiceStatus'
 import { z } from 'zod'
 
 const invoiceRoute = new Hono()
-const invoiceService = new InvoiceService()
 const processingPaymentLinks = new Set<string>()
+
+// Lazy initialization - service is created only when needed
+const getInvoiceService = () => new InvoiceService()
 
 const createPaymentLinkSchema = z.object({
   order_id: z.string().min(1, 'order_id is required')
@@ -45,7 +47,7 @@ invoiceRoute.post('/invoices', apiKeyAuth, async (c) => {
     // Auto-generate orderId
     const orderId = `PAY-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     
-    const invoice = await invoiceService.create(orderId, amount)
+    const invoice = await getInvoiceService().create(orderId, amount)
     return c.json(invoice, 201)
 
   } catch (error: any) {
@@ -70,7 +72,7 @@ invoiceRoute.post('/invoices/:id/generate-payment-link', apiKeyAuth, async (c) =
         return c.json({ error: 'ID invoice tidak valid' }, 400)
       }
 
-      const result = await invoiceService.generatePaymentLink(id)
+      const result = await getInvoiceService().generatePaymentLink(id)
 
       return c.json({
         paymentLink: result.paymentLink,
@@ -120,7 +122,7 @@ invoiceRoute.post('/v1/payment-links', apiKeyAuth, async (c) => {
 
     try {
       // Mengambil Pembayaran by order_id
-      const payment = await invoiceService.getByOrderId(order_id)
+      const payment = await getInvoiceService().getByOrderId(order_id)
       if (!payment) {
         return c.json({ error: 'Payment not found' }, 404)
       }
@@ -154,7 +156,7 @@ invoiceRoute.post('/v1/payment-links', apiKeyAuth, async (c) => {
       }
 
       // Generate payment link
-      const updatedPayment = await invoiceService.generatePaymentLink(payment.id)
+      const updatedPayment = await getInvoiceService().generatePaymentLink(payment.id)
 
       return c.json({
         payment_url: updatedPayment.paymentLink,
@@ -201,7 +203,7 @@ invoiceRoute.get('/invoices/:id', async (c) => {
       return c.json({ error: 'ID pembayaran tidak valid' }, 400)
     }
     
-    const invoice = await invoiceService.getById(id)
+    const invoice = await getInvoiceService().getById(id)
     if (!invoice) return c.json({ error: 'Pembayaran tidak ditemukan' }, 404)
     
     return c.json(invoice)
@@ -242,7 +244,7 @@ invoiceRoute.delete('/invoices/:id', apiKeyAuth, async (c) => {
       return c.json({ error: 'ID pembayaran tidak valid' }, 400)
     }
     
-    const invoice = await invoiceService.softDelete(id)
+    const invoice = await getInvoiceService().softDelete(id)
     return c.json(invoice)
   } catch (error: any) {
     if (error.message === 'Invoice not found') {
@@ -260,7 +262,7 @@ invoiceRoute.delete('/invoices/:id', apiKeyAuth, async (c) => {
  */
 invoiceRoute.get('/v1/invoices', async (c) => {
   try {
-    const invoices = await invoiceService.getAll(50)
+    const invoices = await getInvoiceService().getAll(50)
     return c.json(invoices)
   } catch (error: any) {
     console.error('List invoices error:', error)
@@ -277,7 +279,7 @@ invoiceRoute.get('/payment/success', async (c) => {
   }
 
   try {
-    const invoice = await invoiceService.getByOrderId(orderId)
+    const invoice = await getInvoiceService().getByOrderId(orderId)
     if (!invoice) {
       return c.html('<h1>Payment Not Found</h1>')
     }

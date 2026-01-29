@@ -59,7 +59,7 @@ src/
 │   ├── invoice.service.ts              # Original service (legacy)
 │   └── invoice.service.v2.ts           # SOLID refactored service
 └── config/
-    └── mikro-orm.ts                    # Multi-driver configuration
+    └── db.ts                           # Multi-driver configuration
 ```
 
 ## Usage Examples
@@ -153,7 +153,7 @@ DB_NAME=./database.sqlite
 
 ### Before (Tightly Coupled)
 ```typescript
-import { getEntityManager } from '../config/mikro-orm'
+import { getEntityManager } from '../config/db'
 
 class InvoiceService {
   async create(orderId: string, amount: number) {

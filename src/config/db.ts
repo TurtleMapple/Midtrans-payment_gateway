@@ -53,13 +53,13 @@ const getDatabaseConfig = () => {
   };
 };
 
-export const mikroOrmConfig = getDatabaseConfig() as Options;
+export const dbConfig = getDatabaseConfig() as Options;
 
 export let orm: MikroORM;
 
 export const initDatabase = async (): Promise<MikroORM> => {
   try {
-    orm = await MikroORM.init(mikroOrmConfig);
+    orm = await MikroORM.init(dbConfig);
     console.log(
       `✅ Database connected successfully using ${env.DB_DRIVER} driver`,
     );

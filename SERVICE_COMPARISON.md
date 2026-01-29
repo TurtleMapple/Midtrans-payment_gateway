@@ -20,7 +20,7 @@
 
 #### OLD (`invoice.service.ts`)
 ```typescript
-import { getEntityManager } from '../config/mikro-orm'  // Direct coupling!
+import { getEntityManager } from '../config/db'  // Direct coupling!
 import { Invoice } from '../database/entities/InvoiceEntity'
 import { InvoiceStatus } from '../database/entities/InvoiceStatus'
 import { LockMode } from '@mikro-orm/core'

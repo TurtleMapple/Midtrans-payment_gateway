@@ -24,11 +24,11 @@ importers:
         specifier: ^6.6.4
         version: 6.6.4(@mikro-orm/core@6.6.4)(pg@8.16.3)
       '@mikro-orm/postgresql':
-        specifier: ^6.6.5
-        version: 6.6.5(@mikro-orm/core@6.6.4)(mysql2@3.16.1)
+        specifier: ^6.6.4
+        version: 6.6.4(@mikro-orm/core@6.6.4)(mysql2@3.16.1)
       '@mikro-orm/sqlite':
-        specifier: ^6.6.5
-        version: 6.6.5(@mikro-orm/core@6.6.4)(mysql2@3.16.1)(pg@8.16.3)
+        specifier: ^6.6.4
+        version: 6.6.4(@mikro-orm/core@6.6.4)(mysql2@3.16.1)(pg@8.16.3)
       '@scalar/hono-api-reference':
         specifier: ^0.9.37
         version: 0.9.37(hono@4.11.4)
@@ -312,22 +312,6 @@ packages:
       mariadb:
         optional: true
 
-  '@mikro-orm/knex@6.6.5':
-    resolution: {integrity: sha512-iDfeXivg2kwA+yHfqkZcyDfqbfRHJnZf29JYOQaOOF59tLW1lGjMXL7mmAr36vU/Yjspo+wDIetVBYpfjIQ/ug==}
-    engines: {node: '>= 18.12.0'}
-    peerDependencies:
-      '@mikro-orm/core': ^6.0.0
-      better-sqlite3: '*'
-      libsql: '*'
-      mariadb: '*'
-    peerDependenciesMeta:
-      better-sqlite3:
-        optional: true
-      libsql:
-        optional: true
-      mariadb:
-        optional: true
-
   '@mikro-orm/migrations@6.6.4':
     resolution: {integrity: sha512-e2f8A9GELsozaIdojuoReypLDLDvWuVv6HU25Hfkxyf5VFxnXT0XrK2qjnmvFiRhpHqypRJVPzuCMIdRF2g4xw==}
     engines: {node: '>= 18.12.0'}
@@ -340,14 +324,14 @@ packages:
     peerDependencies:
       '@mikro-orm/core': ^6.0.0
 
-  '@mikro-orm/postgresql@6.6.5':
-    resolution: {integrity: sha512-tb+ppI5zPzZy5zbY484hzT6cYlKVT92qvCTnVgtYIhnOOJ5u2izppSPU5sA1AuslqAugdMkOSRorUuWC5BFZnQ==}
+  '@mikro-orm/postgresql@6.6.4':
+    resolution: {integrity: sha512-s10sZraQrmKwi0F5c+QXuYfgXCbCKrQ+Peanx+eOYvAumsEVQ66u/JaVpvWtS6wWHxfJHBDlUW+kU4CIid5rng==}
     engines: {node: '>= 18.12.0'}
     peerDependencies:
       '@mikro-orm/core': ^6.0.0
 
-  '@mikro-orm/sqlite@6.6.5':
-    resolution: {integrity: sha512-gVWQU0Mcca5AVh0bWxrsdB66KV6YMFQTGMxeMe2tldB+f7g1XMQOF2GH4AipmPmIwxg+G23DeNMlwYcFH+f1Xw==}
+  '@mikro-orm/sqlite@6.6.4':
+    resolution: {integrity: sha512-Nrxt/N67GydQMZTeV77F8mWJ1zrTdCuqVm0kEmb/nr/WjLPF3VWTGc5Do/6kHZodq+h7HHMQTG//e2PhNwdUFQ==}
     engines: {node: '>= 18.12.0'}
     peerDependencies:
       '@mikro-orm/core': ^6.0.0
@@ -1644,6 +1628,11 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  semver@7.7.3:
+    resolution: {integrity: sha512-SdsKMrI9TdgjdweUSR9MweHA4EJ8YxHn8DFaDisvhVlUOe4BF1tLD7GAj0lIqWVl+dPb/rExr0Btby5loQm20Q==}
+    engines: {node: '>=10'}
+    hasBin: true
+
   send@1.2.1:
     resolution: {integrity: sha512-1gnZf7DFcoIcajTjTwjwuDjzuz4PPcY2StKPlsGAQ1+YH20IRVrBaXSWmdjowTJ6u8Rc01PoYOGHXfP1mYcZNQ==}
     engines: {node: '>= 18'}
@@ -2209,22 +2198,7 @@ snapshots:
       - supports-color
       - tedious
 
-  '@mikro-orm/knex@6.6.5(@mikro-orm/core@6.6.4)(mysql2@3.16.1)(pg@8.16.3)':
-    dependencies:
-      '@mikro-orm/core': 6.6.4
-      fs-extra: 11.3.3
-      knex: 3.1.0(mysql2@3.16.1)(pg@8.16.3)
-      sqlstring: 2.3.3
-    transitivePeerDependencies:
-      - mysql
-      - mysql2
-      - pg
-      - pg-native
-      - sqlite3
-      - supports-color
-      - tedious
-
-  '@mikro-orm/knex@6.6.5(@mikro-orm/core@6.6.4)(mysql2@3.16.1)(pg@8.16.3)(sqlite3@5.1.7)':
+  '@mikro-orm/knex@6.6.4(@mikro-orm/core@6.6.4)(mysql2@3.16.1)(pg@8.16.3)(sqlite3@5.1.7)':
     dependencies:
       '@mikro-orm/core': 6.6.4
       fs-extra: 11.3.3
@@ -2274,10 +2248,10 @@ snapshots:
       - supports-color
       - tedious
 
-  '@mikro-orm/postgresql@6.6.5(@mikro-orm/core@6.6.4)(mysql2@3.16.1)':
+  '@mikro-orm/postgresql@6.6.4(@mikro-orm/core@6.6.4)(mysql2@3.16.1)':
     dependencies:
       '@mikro-orm/core': 6.6.4
-      '@mikro-orm/knex': 6.6.5(@mikro-orm/core@6.6.4)(mysql2@3.16.1)(pg@8.16.3)
+      '@mikro-orm/knex': 6.6.4(@mikro-orm/core@6.6.4)(mysql2@3.16.1)(pg@8.16.3)
       pg: 8.16.3
       postgres-array: 3.0.4
       postgres-date: 2.1.0
@@ -2293,10 +2267,10 @@ snapshots:
       - supports-color
       - tedious
 
-  '@mikro-orm/sqlite@6.6.5(@mikro-orm/core@6.6.4)(mysql2@3.16.1)(pg@8.16.3)':
+  '@mikro-orm/sqlite@6.6.4(@mikro-orm/core@6.6.4)(mysql2@3.16.1)(pg@8.16.3)':
     dependencies:
       '@mikro-orm/core': 6.6.4
-      '@mikro-orm/knex': 6.6.5(@mikro-orm/core@6.6.4)(mysql2@3.16.1)(pg@8.16.3)(sqlite3@5.1.7)
+      '@mikro-orm/knex': 6.6.4(@mikro-orm/core@6.6.4)(mysql2@3.16.1)(pg@8.16.3)(sqlite3@5.1.7)
       fs-extra: 11.3.3
       sqlite3: 5.1.7
       sqlstring-sqlite: 0.1.1
@@ -2341,7 +2315,7 @@ snapshots:
   '@npmcli/fs@1.1.1':
     dependencies:
       '@gar/promisify': 1.1.3
-      semver: 7.5.4
+      semver: 7.7.3
     optional: true
 
   '@npmcli/move-file@1.1.2':
@@ -2444,7 +2418,7 @@ snapshots:
 
   agent-base@6.0.2:
     dependencies:
-      debug: 4.3.4
+      debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
     optional: true
@@ -3057,7 +3031,7 @@ snapshots:
     dependencies:
       '@tootallnate/once': 1.1.2
       agent-base: 6.0.2
-      debug: 4.3.4
+      debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
     optional: true
@@ -3065,14 +3039,14 @@ snapshots:
   https-proxy-agent@5.0.1:
     dependencies:
       agent-base: 6.0.2
-      debug: 4.3.4
+      debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
     optional: true
 
   humanize-ms@1.2.1:
     dependencies:
-      ms: 2.1.2
+      ms: 2.1.3
     optional: true
 
   iconv-lite@0.6.3:
@@ -3422,7 +3396,7 @@ snapshots:
 
   node-abi@3.87.0:
     dependencies:
-      semver: 7.5.4
+      semver: 7.7.3
 
   node-addon-api@7.1.1: {}
 
@@ -3435,7 +3409,7 @@ snapshots:
       nopt: 5.0.0
       npmlog: 6.0.2
       rimraf: 3.0.2
-      semver: 7.5.4
+      semver: 7.7.3
       tar: 6.2.1
       which: 2.0.2
     transitivePeerDependencies:
@@ -3711,6 +3685,8 @@ snapshots:
     dependencies:
       lru-cache: 6.0.0
 
+  semver@7.7.3: {}
+
   send@1.2.1:
     dependencies:
       debug: 4.4.3
@@ -3799,7 +3775,7 @@ snapshots:
   socks-proxy-agent@6.2.1:
     dependencies:
       agent-base: 6.0.2
-      debug: 4.3.4
+      debug: 4.4.3
       socks: 2.8.7
     transitivePeerDependencies:
       - supports-color

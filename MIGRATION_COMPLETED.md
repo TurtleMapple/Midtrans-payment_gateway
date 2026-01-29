@@ -31,7 +31,7 @@ Your application has been successfully migrated to use the **SOLID-based Invoice
 - ✅ `src/repositories/RepositoryFactory.ts` - Factory pattern
 
 #### Configuration
-- ✅ `src/config/mikro-orm.ts` - Multi-database driver support
+- ✅ `src/config/db.ts` - Multi-database driver support
 - ✅ `src/config/env.ts` - DB_DRIVER validation
 - ✅ `.env.example` - Multi-database configuration template
 
