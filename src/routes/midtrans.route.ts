@@ -1,114 +1,20 @@
-import { Hono } from 'hono'
 import { MidtransService } from '../services/midtrans.service'
 import { InvoiceService } from '../services/invoice.service'
 import { InvoiceStatus } from '../database/entities/InvoiceStatus'
 import crypto from 'crypto'
 import { midtransEnv } from '../config/midtrans'
-import { mapMidtransStatusToInvoice } from '../services/midtrans.service'
+import { mapMidtransStatusToInvoice, validateWebhookRequest, validatePaymentRules, 
+        verifySignature, isValidStatusTransition, logRequest } from '../services/midtrans.service'
+import { Hono } from 'hono'
+
 
 const midtransRoute = new Hono()
-
 // Inisialisasi layanan dengan injeksi dependensi
 const invoiceService = new InvoiceService()
 const midtransService = new MidtransService(invoiceService)
 
 // Cache notifikasi yang sudah diproses untuk idempotency
 const processedNotifications = new Set<string>()
-
-/**
- * VERIFIKASI TANDA TANGAN
- * 
- * Memverifikasi tanda tangan dari Midtrans untuk keamanan webhook.
- * Wajib diaktifkan untuk lingkungan produksi.
- */
-function verifySignature(notification: any, signature: string): boolean {
-  if (!midtransEnv.IS_PRODUCTION) return true // Lewati di sandbox
-  
-  const { order_id, status_code, gross_amount } = notification
-  const serverKey = midtransEnv.SERVER_KEY
-  
-  const signatureKey = crypto
-    .createHash('sha512')
-    .update(`${order_id}${status_code}${gross_amount}${serverKey}`)
-    .digest('hex')
-    
-  return signatureKey === signature
-}
-
-/**
- * PENCATATAN TERSTRUKTUR
- * 
- * Pencatatan yang diperkaya dengan ID transaksi dan durasi untuk pemantauan.
- */
-function logRequest(type: 'webhook', data: any, success: boolean, error?: any, duration?: number) {
-  const logData = {
-    timestamp: new Date().toISOString(),
-    type,
-    success,
-    orderId: data.orderId || data.order_id,
-    transactionId: data.transaction_id,
-    amount: data.amount || data.gross_amount,
-    ...(duration && { duration: `${duration}ms` }),
-    ...(error && { error: error.message })
-  }
-  
-  if (success) {
-    console.info('MIDTRANS_REQUEST', JSON.stringify(logData))
-  } else {
-    console.error('MIDTRANS_ERROR', JSON.stringify(logData))
-  }
-}
-
-/**
- * 💰 VALIDASI ATURAN BISNIS
- * 
- * Validasi pembayaran yang komprehensif dengan aturan bisnis yang ketat.
- */
-function validatePaymentRules(invoice: any, notification: any): string | null {
-  const invoiceAmount = invoice.amount
-  const paidAmount = Number(notification.gross_amount)
-  
-  // Aturan 1: Jumlah harus sama persis (ketat)
-  if (paidAmount !== invoiceAmount) {
-    return `Ketidakcocokan jumlah: diharapkan ${invoiceAmount}, diterima ${paidAmount}`
-  }
-  
-  // Aturan 2: Validasi status invoice
-  if (invoice.status === InvoiceStatus.PAID) {
-    return 'Invoice sudah dibayar - tidak dapat dibayar ulang'
-  }
-  
-  if (invoice.status === InvoiceStatus.EXPIRED) {
-    return 'Invoice kedaluwarsa - pembayaran tidak diizinkan'
-  }
-  
-  // Aturan 3: Hanya PENDING dan FAILED yang dapat menerima pembayaran
-  if (invoice.status !== InvoiceStatus.PENDING && invoice.status !== InvoiceStatus.FAILED) {
-    return `Status invoice tidak valid untuk pembayaran: ${invoice.status}`
-  }
-  
-  return null // Semua validasi berhasil
-}
-
-/**
- * 🔍 PEMBANTU VALIDASI
- */
-function validateWebhookRequest(notification: any): string | null {
-  if (!notification.order_id || !notification.transaction_status) {
-    return 'Notifikasi tidak valid: order_id dan transaction_status diperlukan'
-  }
-  
-  if (!notification.transaction_id) {
-    return 'Notifikasi tidak valid: transaction_id diperlukan'
-  }
-
-  if (!notification.gross_amount) {
-    return 'Notifikasi tidak valid: gross_amount diperlukan'
-  }
-  
-  return null
-}
-
 /**
  * 🔔 PENANGANAN WEBHOOK MIDTRANS - SIAP PRODUKSI
  * 
@@ -151,7 +57,7 @@ midtransRoute.post('/notification', async (c) => {
     if (processedNotifications.has(notificationId)) {
       const duration = Date.now() - startTime
       logRequest('webhook', notification, true, { message: 'Notifikasi duplikat' }, duration)
-      return c.json({ success: true, message: 'Sudah diprosesupdatedInvoice' }, 200)
+      return c.json({ success: true, message: 'Sudah diproses' }, 200)
     }
 
     // 📋 AMBIL INVOICE UNTUK VALIDASI
@@ -176,17 +82,55 @@ midtransRoute.post('/notification', async (c) => {
       throw new Error(`Unknown transaction status: ${notification.transaction_status}`)
     }
 
+    // 3. FSM GUARD - Validasi transisi status
+    if (!isValidStatusTransition(invoice.status, newStatus)) {
+      const duration = Date.now() - startTime
+      logRequest('webhook', notification, true, { message: 'Invalid status transition' }, duration)
+      return c.json({ success: true, message: 'Status transition not allowed' }, 200)
+    }
+
+    // 4. STATUS-BASED IDEMPOTENCY - Cek status sudah sama
+    if (invoice.status === newStatus) {
+      const duration = Date.now() - startTime
+      logRequest('webhook', notification, true, { message: 'Status already set' }, duration)
+      return c.json({ success: true, message: 'Status already set - idempotent' }, 200)
+    }
+
+    // 5. ATOMIC CAS
     const result = await invoiceService.updateStatusAtomicFromPending(
       notification.order_id,
       newStatus,
       notification
     )
 
+    // 6. SIDE-EFFECT GATING - Handle NOOP dengan proper response
     if (result === 'NOOP') {
-      throw new Error('Invoice not in PENDING state')
+      const duration = Date.now() - startTime
+      const correlationId = `cb_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      
+      console.log('ATOMIC_NOOP', {
+        correlationId,
+        timestamp: new Date().toISOString(),
+        orderId: notification.order_id,
+        expectedStatus: 'PENDING',
+        newStatus,
+        reason: 'Invoice not in PENDING state or race condition'
+      })
+      
+      logRequest('webhook', notification, true, { message: 'Atomic NOOP' }, duration)
+      return c.json({ success: true, message: 'No operation performed' }, 200)
     }
 
-const updatedInvoice = await invoiceService.getByOrderId(notification.order_id)
+    // ✅ AUDIT LOG - Success dengan correlation ID
+    const correlationId = `cb_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    console.log('ATOMIC_SUCCESS', {
+      correlationId,
+      timestamp: new Date().toISOString(),
+      orderId: notification.order_id,
+      statusTransition: `${invoice.status} → ${newStatus}`
+    })
+
+    const updatedInvoice = await invoiceService.getByOrderId(notification.order_id)
     
     // Tandai sebagai sudah diproses
     processedNotifications.add(notificationId)

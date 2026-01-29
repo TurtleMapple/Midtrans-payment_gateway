@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import invoiceRoute from './routes/invoice.route'
-import callbackRoute from './services/midtrans.service'
+import midtransRoute  from './routes/midtrans.route'
 import { throttlePolicies } from './middleware/auth.middleware'
 import { readFileSync } from 'fs'
 import { join } from 'path'
@@ -52,7 +52,7 @@ app.route('/', invoiceRoute)
 
 // CALLBACK dengan throttling khusus
 app.use('/midtrans/notification', throttlePolicies.callback)
-app.route('/midtrans', callbackRoute)
+app.route('/midtrans', midtransRoute)
 
 // OpenAPI JSON endpoint
 app.get('/openapi.json', (c) => {

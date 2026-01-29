@@ -1,16 +1,15 @@
 import { midtransEnv } from '../config/midtrans'
 import { InvoiceService } from './invoice.service'
 import { InvoiceStatus } from '../database/entities/InvoiceStatus'
-import { Hono } from 'hono';
 import crypto from 'crypto';
 
-const callbackRoute = new Hono();
 /**
  * 🔔 MIDTRANS NOTIFICATION INTERFACE
  * 
  * Struktur data yang diterima dari webhook Midtrans
  * setelah customer melakukan pembayaran.
  */
+
 interface MidtransNotification {
   order_id: string              
   transaction_status: string    
@@ -23,25 +22,111 @@ interface MidtransNotification {
   [key: string]: unknown        
 }
 
-function verifySignature(notification: MidtransNotification): boolean {
-  const { order_id, status_code, gross_amount, signature_key } = notification;
-  if (!order_id || !status_code || !gross_amount || !signature_key) return false;
+/**
+ * VERIFIKASI TANDA TANGAN
+ * 
+ * Memverifikasi tanda tangan dari Midtrans untuk keamanan webhook.
+ * Wajib diaktifkan untuk lingkungan produksi.
+ */
+export function verifySignature(notification: any, signature: string): boolean {
+  if (!midtransEnv.IS_PRODUCTION) return true // Lewati di sandbox
   
-  const payload = order_id + status_code + gross_amount + midtransEnv.SERVER_KEY;
-  const calculated = crypto.createHash('sha512').update(payload).digest('hex');
-  return calculated === signature_key;
+  const { order_id, status_code, gross_amount } = notification
+  const serverKey = midtransEnv.SERVER_KEY
+  
+  const signatureKey = crypto
+    .createHash('sha512')
+    .update(`${order_id}${status_code}${gross_amount}${serverKey}`)
+    .digest('hex')
+    
+  return signatureKey === signature
 }
 
-function isValidStatusTransition(currentStatus: InvoiceStatus, newStatus: InvoiceStatus): boolean {
-  const finalStatuses = [InvoiceStatus.PAID, InvoiceStatus.FAILED, InvoiceStatus.EXPIRED];
-  if (finalStatuses.includes(currentStatus)){
-    return false;
+/**
+ * 🔍 PEMBANTU VALIDASI
+ */
+export function validateWebhookRequest(notification: any): string | null {
+  if (!notification.order_id || !notification.transaction_status) {
+    return 'Notifikasi tidak valid: order_id dan transaction_status diperlukan'
+  }
+  
+  if (!notification.transaction_id) {
+    return 'Notifikasi tidak valid: transaction_id diperlukan'
   }
 
-  if (currentStatus === InvoiceStatus.PENDING){
-    return true
+  if (!notification.gross_amount) {
+    return 'Notifikasi tidak valid: gross_amount diperlukan'
   }
-  return false
+  
+  return null
+}
+
+/**
+ * 💰 VALIDASI ATURAN BISNIS
+ * 
+ * Validasi pembayaran yang komprehensif dengan aturan bisnis yang ketat.
+ */
+export function validatePaymentRules(invoice: any, notification: any): string | null {
+  const invoiceAmount = invoice.amount
+  const paidAmount = Number(notification.gross_amount)
+  
+  // Aturan 1: Jumlah harus sama persis (ketat)
+  if (paidAmount !== invoiceAmount) {
+    return `Ketidakcocokan jumlah: diharapkan ${invoiceAmount}, diterima ${paidAmount}`
+  }
+  
+  // Aturan 2: Validasi status invoice
+  if (invoice.status === InvoiceStatus.PAID) {
+    return 'Invoice sudah dibayar - tidak dapat dibayar ulang'
+  }
+  
+  if (invoice.status === InvoiceStatus.EXPIRED) {
+    return 'Invoice kedaluwarsa - pembayaran tidak diizinkan'
+  }
+  
+  // Aturan 3: Hanya PENDING dan FAILED yang dapat menerima pembayaran
+  if (invoice.status !== InvoiceStatus.PENDING && invoice.status !== InvoiceStatus.FAILED) {
+    return `Status invoice tidak valid untuk pembayaran: ${invoice.status}`
+  }
+  
+  return null // Semua validasi berhasil
+}
+
+/**
+ * 🔄 FSM GUARD - VALIDASI TRANSISI STATUS
+ * 
+ * Memastikan transisi status invoice mengikuti aturan finite state machine.
+ */
+export function isValidStatusTransition(currentStatus: InvoiceStatus, newStatus: InvoiceStatus): boolean {
+  const finalStatuses = [InvoiceStatus.PAID, InvoiceStatus.FAILED, InvoiceStatus.EXPIRED];
+  if (finalStatuses.includes(currentStatus)) {
+    return false;
+  }
+  return currentStatus === InvoiceStatus.PENDING;
+}
+
+/**
+ * PENCATATAN TERSTRUKTUR
+ * 
+ * Pencatatan yang diperkaya dengan ID transaksi dan durasi untuk pemantauan.
+ */
+export function logRequest(type: 'webhook', data: any, success: boolean, error?: any, duration?: number) {
+  const logData = {
+    timestamp: new Date().toISOString(),
+    type,
+    success,
+    orderId: data.orderId || data.order_id,
+    transactionId: data.transaction_id,
+    amount: data.amount || data.gross_amount,
+    ...(duration && { duration: `${duration}ms` }),
+    ...(error && { error: error.message })
+  }
+  
+  if (success) {
+    console.info('MIDTRANS_REQUEST', JSON.stringify(logData))
+  } else {
+    console.error('MIDTRANS_ERROR', JSON.stringify(logData))
+  }
 }
 
 export function mapMidtransStatusToInvoice(transactionStatus: string): InvoiceStatus | null {
@@ -68,107 +153,3 @@ export class MidtransService {
     this.invoiceService = invoiceService
   }
 }
-
-callbackRoute.post('/notification', async (c) => {
-  try{
-    const body = await c.req.json().catch(() => null)
-    if (!body) {
-      return c.json({ error: 'Invalid JSON' }, 400)
-    }
-
-    // 1. VERIFY SIGNATURE (auth)
-    if (!verifySignature(body)) {
-      console.log('INVALID_SIGNATURE', {
-        timestamp: new Date().toISOString(),
-        orderId: body.order_id || 'unknown'
-      });
-      return c.json({ received: true }, 200);
-    }
-
-    const invoiceService = new InvoiceService();
-    const invoice = await invoiceService.getByOrderId(body.order_id);
-
-    if (!invoice) {
-      console.log('INVOICE_NOT_FOUND', {
-        timestamp: new Date().toISOString(),
-        orderId: body.order_id
-      });
-      return c.json({ received: true }, 200);
-    }
-
-    // 2. MAP STATUS
-    const newStatus = mapMidtransStatusToInvoice(body.transaction_status);
-    if (!newStatus) {
-      console.log('UNKNOWN_TRANSACTION_STATUS', {
-        timestamp: new Date().toISOString(),
-        orderId: body.order_id,
-        status: body.transaction_status
-      });
-      return c.json({ received: true }, 200);
-    }
-
-    // 3. FSM GUARD
-    if (!isValidStatusTransition(invoice.status, newStatus)) {
-      console.log('INVALID_STATUS_TRANSITION', {
-        timestamp: new Date().toISOString(),
-        orderId: body.order_id,
-        currentStatus: invoice.status,
-        newStatus: newStatus
-      });
-      return c.json({ received: true }, 200);
-    }
-
-    // 4. STATUS-BASED IDEMPOTENCY
-    if (invoice.status === newStatus) {
-      console.log('STATUS_ALREADY_SET', {
-        timestamp: new Date().toISOString(),
-        orderId: body.order_id,
-        status: newStatus,
-        reason: 'Idempotent callback'
-      });
-      return c.json({ received: true }, 200);
-    }
-
-    // 5. ATOMIC CAS - TANPA SIDE-EFFECT SEBELUMNYA
-    const result = await invoiceService.updateStatusAtomicFromPending(
-      body.order_id,
-      newStatus,
-      body
-    )
-
-    // 6. SIDE-EFFECT GATING - HANYA SETELAH TAHU HASIL CAS
-    if (result === 'NOOP') {
-      console.log('ATOMIC_NOOP', {
-        timestamp: new Date().toISOString(),
-        orderId: body.order_id,
-        expectedStatus: 'PENDING',
-        newStatus,
-        reason: 'Invoice not in PENDING state or race condition'
-      })
-      return c.json({ received: true }, 200)
-    }
-
-    // HANYA JIKA SUCCESS - BARU BOLEH SIDE-EFFECTS
-    const correlationId = `cb_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    
-    // ✅ AUDIT LOG (setelah CAS SUCCESS)
-    console.log('ATOMIC_SUCCESS', {
-      correlationId,
-      timestamp: new Date().toISOString(),
-      orderId: body.order_id,
-      statusTransition: `PENDING → ${newStatus}`
-    })
-
-    // ✅ FUTURE: Emit events, notify systems, etc (setelah CAS SUCCESS)
-    // await eventEmitter.emit('invoice.status.changed', { orderId, newStatus })
-    // await notificationService.notify(orderId, newStatus)
-
-    return c.json({ received: true }, 200)
-
-  } catch (error) {
-    console.error('Callback error:', error)
-    return c.json({ received: true }, 200)
-  }
-})
-
-export default callbackRoute
