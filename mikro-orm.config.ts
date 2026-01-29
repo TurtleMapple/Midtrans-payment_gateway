@@ -1,4 +1,5 @@
-import 'dotenv/config'
-import { mikroOrmConfig } from './src/config/mikro-orm'
+import "dotenv/config";
+import { dbConfig } from "./src/config/db";
 
-export default mikroOrmConfig
+export default dbConfig;
+

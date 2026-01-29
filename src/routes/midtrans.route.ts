@@ -1,20 +1,20 @@
-import { MidtransService } from '../services/midtrans.service'
-import { InvoiceService } from '../services/invoice.service'
-import { InvoiceStatus } from '../database/entities/InvoiceStatus'
+import { MidtransService } from '../domain/services/midtrans.service'
+import { InvoiceService } from '../domain/services/invoice.service'
+import { InvoiceStatus } from '../domain/entities/InvoiceStatus'
 import crypto from 'crypto'
 import { midtransEnv } from '../config/midtrans'
-import { mapMidtransStatusToInvoice, validateWebhookRequest, validatePaymentRules, 
-        verifySignature, isValidStatusTransition, logRequest } from '../services/midtrans.service'
+import { mapMidtransStatusToInvoice, validateWebhookRequest, validatePaymentRules,
+        verifySignature, isValidStatusTransition, logRequest } from '../domain/services/midtrans.service'
 import { Hono } from 'hono'
 
 
 const midtransRoute = new Hono()
-// Inisialisasi layanan dengan injeksi dependensi
-const invoiceService = new InvoiceService()
-const midtransService = new MidtransService(invoiceService)
 
 // Cache notifikasi yang sudah diproses untuk idempotency
 const processedNotifications = new Set<string>()
+
+// Lazy initialization - service is created only when needed
+const getInvoiceService = () => new InvoiceService()
 /**
  * 🔔 PENANGANAN WEBHOOK MIDTRANS - SIAP PRODUKSI
  * 
@@ -61,7 +61,7 @@ midtransRoute.post('/notification', async (c) => {
     }
 
     // 📋 AMBIL INVOICE UNTUK VALIDASI
-    const invoice = await invoiceService.getByOrderId(notification.order_id)
+    const invoice = await getInvoiceService().getByOrderId(notification.order_id)
     if (!invoice) {
       const duration = Date.now() - startTime
       logRequest('webhook', notification, false, { message: 'Invoice tidak ditemukan' }, duration)
@@ -97,7 +97,7 @@ midtransRoute.post('/notification', async (c) => {
     }
 
     // 5. ATOMIC CAS
-    const result = await invoiceService.updateStatusAtomicFromPending(
+    const result = await getInvoiceService().updateStatusAtomicFromPending(
       notification.order_id,
       newStatus,
       notification
@@ -130,7 +130,7 @@ midtransRoute.post('/notification', async (c) => {
       statusTransition: `${invoice.status} → ${newStatus}`
     })
 
-    const updatedInvoice = await invoiceService.getByOrderId(notification.order_id)
+    const updatedInvoice = await getInvoiceService().getByOrderId(notification.order_id)
     
     // Tandai sebagai sudah diproses
     processedNotifications.add(notificationId)

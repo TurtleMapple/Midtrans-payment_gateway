@@ -1,8 +1,8 @@
-import { Invoice } from '../database/entities/InvoiceEntity'
-import { InvoiceStatus } from '../database/entities/InvoiceStatus'
+import { Invoice } from '../entities/InvoiceEntity'
+import { InvoiceStatus } from '../entities/InvoiceStatus'
 import { IInvoiceRepository } from '../repositories/IInvoiceRepository'
 import { createInvoiceRepository } from '../repositories/RepositoryFactory'
-import { midtransEnv } from '../config/midtrans'
+import { midtransEnv } from '../../config/midtrans'
 
 interface MidtransPaymentLinkResponse {
   payment_url: string

@@ -4,12 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx --watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
+    "dev": "tsx --watch src/server.ts",
     "migration:create": "mikro-orm migration:create",
     "migration:up": "mikro-orm migration:up",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node dist/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy:production": "pnpm exec sst deploy --stage production",
+    "deploy:staging": "pnpm exec sst deploy"
   },
   "keywords": [],
   "author": "",
@@ -21,8 +23,8 @@
     "@mikro-orm/core": "^6.6.4",
     "@mikro-orm/migrations": "^6.6.4",
     "@mikro-orm/mysql": "^6.6.4",
-    "@mikro-orm/postgresql": "^6.6.5",
-    "@mikro-orm/sqlite": "^6.6.5",
+    "@mikro-orm/postgresql": "^6.6.4",
+    "@mikro-orm/sqlite": "^6.6.4",
     "@scalar/hono-api-reference": "^0.9.37",
     "dotenv": "^17.2.3",
     "hono": "^4.11.4",
@@ -30,11 +32,13 @@
     "mikro-orm": "^6.6.4",
     "mysql2": "^3.16.1",
     "reflect-metadata": "^0.2.2",
+    "sst": "3.17.38",
     "uuid": "^13.0.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@mikro-orm/cli": "^6.6.4",
+    "@types/aws-lambda": "8.10.160",
     "@types/midtrans-client": "^1.4.0",
     "@types/node": "^25.0.9",
     "@types/uuid": "^11.0.0",

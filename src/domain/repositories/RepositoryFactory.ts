@@ -1,7 +1,7 @@
 import { EntityManager } from '@mikro-orm/core'
 import { IInvoiceRepository } from './IInvoiceRepository'
 import { MikroOrmInvoiceRepository } from './MikroOrmInvoiceRepository'
-import { getEntityManager } from '../config/mikro-orm'
+import { getEntityManager } from '../../config/db'
 
 /**
  * REPOSITORY FACTORY

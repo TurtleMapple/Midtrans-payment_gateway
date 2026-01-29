@@ -36,7 +36,7 @@ src/
 
 ### Option 1: Keep Using Old Service (No Migration Needed)
 
-Your old service (`invoice.service.ts`) still works perfectly fine! The multi-database support is already integrated through `src/config/mikro-orm.ts`.
+Your old service (`invoice.service.ts`) still works perfectly fine! The multi-database support is already integrated through `src/config/db.ts`.
 
 **No code changes required** - just set `DB_DRIVER` in your `.env` file.
 

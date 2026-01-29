@@ -1,25 +1,44 @@
 import 'dotenv/config'
 import { serve } from '@hono/node-server'
 import app from './app'
-import { initDatabase } from './config/mikro-orm'
+import { initDatabase } from './config/db'
 import 'reflect-metadata'
 
 const port = Number(process.env.PORT || 3000)
 
-const startServer = async () => {
-  try {
+// Initialize database once
+let isInitialized = false
+const ensureInitialized = async () => {
+  if (!isInitialized) {
     await initDatabase()
     console.log("Database Connected")
+    isInitialized = true
+  }
+}
 
-    serve({ 
-        fetch: app.fetch, 
-        port 
+// Lambda handler export
+export const handler = async (event: any, context: any) => {
+  await ensureInitialized()
+  return app.fetch(event, context)
+}
+
+// Local development server
+const startServer = async () => {
+  try {
+    await ensureInitialized()
+
+    serve({
+        fetch: app.fetch,
+        port
     })
-    
+
     console.log(`✅ Server running on port ${port}`)
   } catch (error) {
     console.error('❌ Failed to start server:', error)
   }
 }
 
-startServer()
+// Only start the server if running locally (not in Lambda)
+if (process.env.AWS_LAMBDA_FUNCTION_NAME === undefined) {
+  startServer()
+}
