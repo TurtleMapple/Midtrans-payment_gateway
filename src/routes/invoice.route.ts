@@ -268,28 +268,6 @@ invoiceRoute.get('/v1/invoices', async (c) => {
   }
 })
 
-/**
- * 🔍 GET INVOICE BY ID - Simple Version  
- * 
- * GET /v1/invoices/:id - Get single invoice
- */
-invoiceRoute.get('/v1/invoices/:id', async (c) => {
-  try {
-    const id = c.req.param('id')
-    
-    if (!id || id.trim() === '') {
-      return c.json({ error: 'Invalid invoice ID' }, 400)
-    }
-    
-    const invoice = await invoiceService.getById(id)
-    if (!invoice) return c.json({ error: 'Invoice not found' }, 404)
-    
-    return c.json(invoice)
-  } catch (error: any) {
-    console.error('Get invoice error:', error)
-    return c.json({ error: 'Internal server error' }, 500)
-  }
-})
 
 invoiceRoute.get('/payment/success', async (c) => {
   const orderId = c.req.query('order_id')
